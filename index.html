@@ -2,759 +2,546 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ตัววิเคราะห์กราฟหุ้น</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ปลายฝนของชำ</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700;800&family=Sarabun&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#f7f5ef;
-    --surface:#ffffff;
-    --surface-2:#efece2;
-    --line:#dbd5c4;
-    --gold:#a97c2f;
-    --gold-dim:#8a6524;
-    --teal:#1f7d6c;
-    --rust:#af3f2a;
-    --ink:#20241d;
-    --ink-dim:#63695d;
-    --ink-faint:#9a9c8d;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:radial-gradient(ellipse at top, rgba(169,124,47,0.06), transparent 55%), var(--bg);
-    color:var(--ink);
-    font-family:'Sarabun',sans-serif;
-    min-height:100vh;
-    padding-bottom:60px;
-  }
-  .mono{font-family:'IBM Plex Mono',monospace;}
+:root{
+  --green:#0aa64c;
+  --green-dark:#088a3e;
+  --green-light:#e6f7ec;
+  --red:#e2231a;
+  --yellow:#ffd200;
+  --orange:#ff5722;
+  --text:#1a1a1a;
+  --muted:#8a8a8a;
+  --line:#eee;
+  --bg:#f5f6f5;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:70px}
+h1,h2,h3{font-family:'Prompt',sans-serif}
+button{font-family:'Prompt',sans-serif;cursor:pointer}
+img{max-width:100%}
 
-  header{
-    padding:24px 20px 16px;
-    border-bottom:1px solid var(--line);
-    position:sticky; top:0; z-index:20;
-    background:rgba(247,245,239,0.92);
-    backdrop-filter:blur(6px);
-  }
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em;
-    color:var(--gold-dim); text-transform:uppercase; margin-bottom:6px;
-  }
-  h1{font-size:20px; font-weight:600; margin:0 0 12px; letter-spacing:-.01em;}
+/* ===== Header ===== */
+.head{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:14px 16px 16px;border-radius:0 0 18px 18px}
+.head-top{display:flex;align-items:center;gap:10px}
+.logo{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.head-brand{flex:1;min-width:0}
+.head-brand b{font-family:'Prompt';font-size:16px;font-weight:700;display:block;line-height:1.2}
+.head-brand span{font-size:11.5px;opacity:.85}
+.bell{position:relative;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:16px;border:none;color:#fff}
+.bell i{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--green)}
+.addr{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:12.5px;opacity:.95}
+.addr b{cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 
-  .search-row{display:flex; gap:8px; align-items:center;}
-  .ticker-input{
-    flex:1; background:var(--surface); border:1px solid var(--line); border-radius:3px;
-    color:var(--ink); font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600;
-    padding:10px 12px; text-transform:uppercase; letter-spacing:.03em;
-  }
-  .ticker-input:focus{outline:none; border-color:var(--gold-dim);}
-  .go-btn{
-    background:var(--gold); color:#14190f; border:none; border-radius:3px;
-    font-family:'Sarabun',sans-serif; font-weight:600; font-size:14px;
-    padding:10px 16px; cursor:pointer; flex-shrink:0;
-  }
-  .go-btn:active{opacity:.8;}
-  .gear-btn{
-    background:none; border:1px solid var(--line); border-radius:3px; color:var(--ink-dim);
-    font-size:16px; padding:9px 12px; cursor:pointer; flex-shrink:0;
-  }
+/* ===== Search ===== */
+.search-wrap{padding:12px 16px 4px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:10px 13px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.search input{border:none;outline:none;flex:1;font-size:14px;font-family:'Sarabun',sans-serif;background:transparent}
+.search .ic{color:var(--muted);font-size:15px}
 
-  .settings-panel{
-    display:none; margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:3px;
-    background:var(--surface-2);
-  }
-  .settings-panel.open{display:block;}
-  .settings-panel label{font-size:11px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; display:block; margin-bottom:5px;}
-  .settings-panel input{
-    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:3px;
-    color:var(--ink); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:8px 10px; margin-bottom:8px;
-  }
-  .settings-panel .hint{font-size:11px; color:var(--ink-faint); line-height:1.6;}
-  .settings-panel .hint a{color:var(--gold);}
+/* ===== Promo banner ===== */
+.promo-banner{margin:12px 16px;background:linear-gradient(120deg,var(--green-dark),var(--green));border-radius:16px;padding:16px;display:flex;align-items:center;gap:10px;color:#fff;position:relative;overflow:hidden}
+.promo-banner .txt{flex:1}
+.promo-banner .txt b{font-family:'Prompt';font-size:17px;font-weight:800;display:block}
+.promo-banner .txt span{font-size:11.5px;opacity:.9;display:block;margin-top:2px}
+.promo-banner .cta{margin-top:9px;background:var(--yellow);color:#5c4400;border:none;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700}
+.promo-banner .moto{font-size:44px;flex-shrink:0}
 
-  main{max-width:680px; margin:0 auto; padding:0 20px;}
+/* ===== Section titles ===== */
+.sect{padding:16px 16px 0}
+.sect-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.sect-h h3{font-size:15.5px;font-weight:700}
+.sect-h a{font-size:12px;color:var(--green-dark);font-weight:600;text-decoration:none}
 
-  .status-msg{
-    text-align:center; padding:40px 20px; color:var(--ink-faint); font-size:13px;
-  }
-  .status-msg.error{color:var(--rust);}
+/* ===== Category grid ===== */
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 12px 4px}
+.cat-tile{text-align:center;background:none;border:none}
+.cat-tile .ic{width:50px;height:50px;border-radius:16px;margin:0 auto 5px;display:grid;place-items:center;font-size:23px}
+.cat-tile span{font-size:10.5px;color:#444;display:block;line-height:1.2}
+.c1{background:#e3f2fd}.c2{background:#fff3e0}.c3{background:#e8f5e9}.c4{background:#e1f5fe}.c5{background:#f3e5f5}
 
-  .quote-bar{
-    display:flex; align-items:baseline; gap:12px; margin-top:20px; flex-wrap:wrap;
-  }
-  .quote-sym{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:700;}
-  .quote-price{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:700;}
-  .quote-change{font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600;}
-  .quote-change.up{color:var(--teal);}
-  .quote-change.down{color:var(--rust);}
-  .quote-time{font-size:11px; color:var(--ink-faint); width:100%;}
+/* ===== Product cards (best sellers, horizontal) ===== */
+.hscroll{display:flex;gap:11px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.bs-card{flex:0 0 120px;background:#fff;border-radius:14px;padding:9px;box-shadow:0 2px 8px rgba(0,0,0,.06);position:relative}
+.bs-rank{position:absolute;top:6px;left:6px;background:var(--red);color:#fff;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;z-index:2}
+.bs-thumb{width:100%;height:78px;border-radius:10px;background:var(--green-light);display:grid;place-items:center;font-size:34px;margin-bottom:7px}
+.bs-name{font-size:11.5px;font-weight:600;line-height:1.25;height:29px;overflow:hidden}
+.bs-unit{font-size:9.5px;color:var(--muted);margin-top:1px}
+.bs-bot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.bs-price{font-family:'Prompt';font-weight:700;font-size:13px}
+.add-btn{width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;border:none;font-size:15px;display:grid;place-items:center;flex-shrink:0}
 
-  #chart{
-    margin-top:16px; border:1px solid var(--line); border-radius:4px; overflow:hidden;
-    background:var(--surface);
-  }
+/* ===== Promotion cards ===== */
+.promo-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 4px}
+.promo-card{border-radius:14px;padding:13px;color:#fff;min-height:78px;display:flex;flex-direction:column;justify-content:center}
+.promo-card b{font-family:'Prompt';font-size:13px;font-weight:800;line-height:1.3}
+.promo-card span{font-size:10.5px;opacity:.9;margin-top:3px}
+.pc1{background:linear-gradient(120deg,#ff9a56,var(--orange))}
+.pc2{background:linear-gradient(120deg,#5ec98f,var(--green))}
 
-  .legend{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
-  .legend-item{display:flex; align-items:center; gap:5px; font-size:10.5px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace;}
-  .legend-dot{width:10px; height:2px; border-radius:1px;}
+/* ===== Product list (category screen) ===== */
+.plist{padding:10px 16px 16px}
+.prow{display:flex;gap:11px;background:#fff;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:10px;align-items:center}
+.prow .thumb{width:60px;height:60px;border-radius:11px;background:var(--green-light);display:grid;place-items:center;font-size:27px;flex-shrink:0}
+.prow .info{flex:1;min-width:0}
+.prow .nm{font-size:13.5px;font-weight:600;line-height:1.3}
+.prow .un{font-size:11px;color:var(--muted);margin-top:1px}
+.prow .bottom{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.prow .pr{font-family:'Prompt';font-weight:700;font-size:14px}
+.stepper{display:flex;align-items:center;gap:7px;background:var(--green-light);border-radius:999px;padding:2px}
+.stepper button{width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;border:none;font-size:14px;display:grid;place-items:center}
+.stepper .n{font-family:'Prompt';font-weight:700;font-size:13px;min-width:15px;text-align:center}
 
-  .section-title{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase;
-    color:var(--gold-dim); margin:28px 0 10px; display:flex; align-items:center; gap:10px;
-  }
-  .section-title::after{content:''; flex:1; height:1px; background:var(--line);}
+/* ===== Chips ===== */
+.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 16px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:#fff;border:1.3px solid var(--line);color:#555;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
 
-  .analysis-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px;
-  }
-  .analysis-card p{margin:0 0 12px; font-size:14px; line-height:1.75;}
-  .analysis-card p:last-child{margin-bottom:0;}
-  .analysis-card b{color:var(--gold); font-weight:600;}
-  .analysis-card .term{color:var(--teal);}
+/* ===== Top bar (category/cart screens) ===== */
+.topbar{display:flex;align-items:center;gap:10px;padding:13px 14px;background:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.topbar .ib{width:34px;height:34px;border-radius:50%;border:none;background:#f2f2f2;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.topbar h2{flex:1;font-size:16px;font-weight:700}
+.topbar .icons{display:flex;gap:8px}
+.topbar .ic-btn{position:relative}
+.topbar .ic-btn i{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;border:1.5px solid #fff}
 
-  .metric-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line);
-    border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-top:16px;
-  }
-  .metric{background:var(--surface); padding:12px 14px;}
-  .metric-label{font-size:10.5px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; margin-bottom:4px;}
-  .metric-value{font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600;}
-  .metric-value.up{color:var(--teal);}
-  .metric-value.down{color:var(--rust);}
+/* ===== Cart screen ===== */
+.cart-list{padding:8px 16px 4px}
+.cart-row{display:flex;gap:11px;background:#fff;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:10px;align-items:center}
+.cart-row .thumb{width:56px;height:56px;border-radius:11px;background:var(--green-light);display:grid;place-items:center;font-size:25px;flex-shrink:0}
+.cart-row .info{flex:1;min-width:0}
+.cart-row .nm{font-size:13.5px;font-weight:600}
+.cart-row .un{font-size:11px;color:var(--muted);margin:1px 0 6px}
+.cart-row .pr{font-family:'Prompt';font-weight:700;font-size:13.5px}
+.cart-row .del{background:none;border:none;color:var(--muted);font-size:16px;align-self:flex-start}
+.cart-row .bottom-row{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
 
-  .disclaimer{
-    margin-top:28px; padding:16px; border:1px solid var(--line); border-radius:4px;
-    background:var(--surface); font-size:11.5px; color:var(--ink-faint); line-height:1.7;
-  }
-  .disclaimer strong{color:var(--ink-dim);}
+.summary{margin:14px 16px 0;background:#fff;border-radius:16px;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.summary .r{display:flex;justify-content:space-between;font-size:13.5px;color:#555;padding:5px 0}
+.summary .r small{color:var(--green-dark);font-weight:600}
+.summary .r.total{border-top:1.5px dashed var(--line);margin-top:6px;padding-top:11px;font-family:'Prompt';font-weight:800;font-size:16px;color:#1a1a1a}
+.summary .r.total b{color:var(--red);font-size:19px}
+.checkout-btn{width:calc(100% - 32px);margin:14px 16px 4px;background:linear-gradient(120deg,var(--green),var(--green-dark));color:#fff;border:none;border-radius:14px;padding:15px;font-family:'Prompt';font-weight:700;font-size:15px;box-shadow:0 6px 16px rgba(10,166,76,.3)}
+.checkout-btn:disabled{background:#ccc;box-shadow:none}
+.empty-cart{text-align:center;padding:60px 30px;color:var(--muted)}
+.empty-cart .ic{font-size:52px;margin-bottom:12px}
+.empty-cart p{font-size:13.5px;line-height:1.6}
+.empty-cart button{margin-top:16px;background:var(--green);color:#fff;border:none;border-radius:999px;padding:10px 22px;font-size:13px;font-weight:700}
 
-  .footer-note{
-    text-align:center; font-size:10.5px; color:var(--ink-faint); margin-top:14px; font-family:'IBM Plex Mono',monospace;
-  }
+/* ===== Bottom nav ===== */
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:#fff;display:flex;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.05);z-index:30}
+.nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 calc(7px + env(safe-area-inset-bottom));color:var(--muted);font-size:10.5px;font-family:'Prompt'}
+.nav button .ic{font-size:19px;position:relative}
+.nav button.active{color:var(--green-dark)}
+.nav button.active .ic{transform:translateY(-1px)}
+.nav .badge{position:absolute;top:-6px;right:-9px;background:var(--red);color:#fff;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:grid;place-items:center}
 
-  .recent-syms{display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;}
-  .recent-syms button{
-    background:var(--surface); border:1px solid var(--line); color:var(--ink-dim);
-    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 9px; border-radius:3px; cursor:pointer;
-  }
-  .recent-syms button:active{border-color:var(--gold-dim); color:var(--gold);}
+/* ===== Toast / modal ===== */
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;opacity:0;pointer-events:none;transition:all .25s;z-index:90;white-space:nowrap;max-width:90%;text-overflow:ellipsis;overflow:hidden}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:95;display:none;align-items:center;justify-content:center;padding:24px}
+.ov.on{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px 22px;text-align:center;max-width:320px;width:100%}
+.modal .ic{width:74px;height:74px;border-radius:50%;background:var(--green-light);display:grid;place-items:center;font-size:36px;margin:0 auto 14px;color:var(--green)}
+.modal h3{font-size:18px;margin-bottom:7px}
+.modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.modal button{width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Prompt';font-weight:700;font-size:14px}
 
-  .tf-row{display:flex; gap:6px; margin-top:12px; flex-wrap:wrap;}
-  .tf-btn{
-    background:var(--surface); border:1px solid var(--line); color:var(--ink-dim);
-    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:6px 12px; border-radius:3px; cursor:pointer;
-  }
-  .tf-btn.active{background:var(--gold); border-color:var(--gold); color:#fff; font-weight:600;}
-
-  .pattern-list{display:flex; flex-direction:column; gap:10px;}
-  .pattern-item{
-    display:flex; gap:10px; padding:12px; border:1px solid var(--line); border-radius:4px; background:var(--surface);
-  }
-  .pattern-tag{
-    flex-shrink:0; width:64px; height:22px; border-radius:3px; font-size:10px; font-weight:700;
-    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace;
-    text-transform:uppercase; letter-spacing:.02em;
-  }
-  .pattern-tag.bull{background:rgba(31,125,108,0.14); color:var(--teal);}
-  .pattern-tag.bear{background:rgba(175,63,42,0.14); color:var(--rust);}
-  .pattern-tag.neutral{background:var(--surface-2); color:var(--ink-dim);}
-  .pattern-body b{display:block; font-size:13.5px; margin-bottom:3px;}
-  .pattern-body p{margin:0; font-size:13px; line-height:1.6; color:var(--ink-dim);}
-  .pattern-empty{font-size:13px; color:var(--ink-faint); padding:8px 2px;}
-
-  .earnings-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:16px;
-  }
-  .earnings-date-box{
-    display:flex; align-items:center; gap:14px; padding:12px; border:1px solid var(--line); border-radius:4px;
-    background:var(--surface-2); margin-bottom:12px;
-  }
-  .earnings-date-box .d-num{font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700; color:var(--gold);}
-  .earnings-date-box .d-label{font-size:11px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace;}
-  .earnings-card p{margin:0 0 10px; font-size:13.5px; line-height:1.7; color:var(--ink-dim);}
-  .earnings-card p:last-child{margin-bottom:0;}
-  .earnings-card a{color:var(--gold);}
+.screen{display:none}
+.screen.on{display:block}
+.empty-list{text-align:center;color:var(--muted);padding:40px 20px;font-size:13px}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="eyebrow">Technical Read · US Equities</div>
-  <h1>ตัววิเคราะห์กราฟหุ้น</h1>
-  <div class="search-row">
-    <input class="ticker-input" id="tickerInput" placeholder="เช่น SPCX, NVDA, SNDK" autocomplete="off">
-    <button class="go-btn" id="goBtn">ดูกราฟ</button>
-    <button class="gear-btn" id="gearBtn">⚙</button>
+<!-- ===================== HOME ===================== -->
+<div class="screen on" id="screen-home">
+  <div class="head">
+    <div class="head-top">
+      <div class="logo">🏪</div>
+      <div class="head-brand">
+        <b>ปลายฝนของชำ</b>
+        <span>ร้านของชำใกล้บ้านคุณ</span>
+      </div>
+      <button class="bell" onclick="toast('ยังไม่มีการแจ้งเตือนใหม่')">🔔<i>2</i></button>
+    </div>
+    <div class="addr">📍 จัดส่งที่: <b onclick="toast('เปลี่ยนที่อยู่จัดส่งได้เมื่อเชื่อมต่อระบบสมาชิก')">บ้านเลขที่ 123/45 ม.6</b></div>
   </div>
-  <div class="tf-row" id="tfRow"></div>
-  <div class="recent-syms" id="recentSyms"></div>
-  <div class="settings-panel" id="settingsPanel">
-    <label>Twelve Data API Key</label>
-    <input id="apiKeyInput" placeholder="วาง API key ที่นี่" autocomplete="off">
-    <div class="hint">
-      ต้องมี API key ฟรีจาก <a href="https://twelvedata.com/pricing" target="_blank">twelvedata.com</a> (สมัครฟรี ใช้ได้ 800 ครั้ง/วัน) — key จะถูกเก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น ไม่ส่งไปที่ไหน
+
+  <div class="search-wrap">
+    <div class="search">
+      <span class="ic">🔍</span>
+      <input id="searchInput" placeholder="ค้นหาสินค้า..." onkeydown="if(event.key==='Enter')doSearch()">
     </div>
   </div>
-</header>
 
-<main>
-  <div id="statusMsg" class="status-msg">ใส่ชื่อหุ้น (เช่น SPCX) แล้วกด "ดูกราฟ" เพื่อเริ่ม</div>
-
-  <div id="resultArea" style="display:none;">
-    <div class="quote-bar">
-      <div class="quote-sym mono" id="qSym">—</div>
-      <div class="quote-price mono" id="qPrice">—</div>
-      <div class="quote-change mono" id="qChange">—</div>
-      <div class="quote-time" id="qTime"></div>
+  <div class="promo-banner">
+    <div class="txt">
+      <b>ซื้อครบ 199.-</b>
+      <span>ส่งฟรี เฉพาะในหมู่บ้าน</span>
+      <button class="cta" onclick="switchScreen('browse');openBrowseAll()">ช้อปเลย ›</button>
     </div>
-
-    <div id="chart"></div>
-    <div class="legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#a97c2f"></span> EMA 10</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#1f7d6c"></span> EMA 20</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#5a6fb0"></span> EMA 50</div>
-    </div>
-
-    <div class="metric-grid" id="metricGrid"></div>
-
-    <div class="section-title">รูปแบบที่ตรวจพบ</div>
-    <div class="pattern-list" id="patternArea"></div>
-
-    <div class="section-title">สิ่งที่เห็นในกราฟ</div>
-    <div class="analysis-card"><p id="obsText"></p></div>
-
-    <div class="section-title">สรุปทรงกราฟ</div>
-    <div class="analysis-card"><p id="summaryText"></p></div>
-
-    <div class="section-title">วันประกาศงบ & จังหวะเข้าซื้อ (ปีนี้)</div>
-    <div class="earnings-card" id="earningsCard"></div>
-
-    <div class="section-title">เรื่องราคาเข้าซื้อ</div>
-    <div class="analysis-card" id="entryCard"></div>
-
-    <div class="disclaimer">
-      <strong>ข้อควรทราบ:</strong> การวิเคราะห์นี้สร้างจากการคำนวณตามกฎเทคนิคัลอัตโนมัติ (เส้นค่าเฉลี่ย EMA, ระยะห่างจากจุดสูงสุด/ต่ำสุด, แนวโน้มปริมาณซื้อขาย) ไม่ใช่การวิเคราะห์โดยมนุษย์หรือ AI ที่เข้าใจบริบทข่าว/ปัจจัยพื้นฐานของบริษัท และไม่ใช่คำแนะนำการลงทุน ราคาหุ้นผันผวนได้จากปัจจัยที่กฎเหล่านี้ไม่ครอบคลุม (ข่าว, earnings, เหตุการณ์เฉพาะบริษัท) ควรใช้ประกอบการตัดสินใจร่วมกับข้อมูลอื่นเสมอ
-    </div>
-    <p class="footer-note">ข้อมูลราคาอาจดีเลย์เล็กน้อยตามข้อจำกัดของแหล่งข้อมูลฟรี</p>
+    <div class="moto">🛵</div>
   </div>
-</main>
+
+  <div class="cat-grid" id="catGrid"></div>
+
+  <div class="sect">
+    <div class="sect-h"><h3>🔥 สินค้าขายดี</h3><a href="#" onclick="switchScreen('browse');openBrowseAll();return false">ดูทั้งหมด ›</a></div>
+    <div class="hscroll" id="bestSellers"></div>
+  </div>
+
+  <div class="sect" style="padding-top:16px">
+    <div class="sect-h"><h3>🎁 โปรโมชั่นแนะนำ</h3></div>
+  </div>
+  <div class="promo-2col">
+    <div class="promo-card pc1"><b>ซื้อสินค้ากล่อง<br>ลดสูงสุด 10%</b><span>เฉพาะสินค้าที่ร่วมรายการ</span></div>
+    <div class="promo-card pc2"><b>ซื้อ 2 แถม 1</b><span>เฉพาะสินค้าที่ร่วมรายการ</span></div>
+  </div>
+
+  <div style="height:14px"></div>
+</div>
+
+<!-- ===================== BROWSE / CATEGORY ===================== -->
+<div class="screen" id="screen-browse">
+  <div class="topbar">
+    <button class="ib" onclick="switchScreen('home')">←</button>
+    <h2 id="browseTitle">หมวดหมู่สินค้า</h2>
+    <div class="icons">
+      <button class="ib" onclick="switchScreen('home');document.getElementById('searchInput').focus()">🔍</button>
+      <button class="ib ic-btn" onclick="switchScreen('cart')">🛒<i id="cartBadgeBrowse" style="display:none">0</i></button>
+    </div>
+  </div>
+  <div class="chips" id="browseChips"></div>
+  <div class="plist" id="browseList"></div>
+</div>
+
+<!-- ===================== CART ===================== -->
+<div class="screen" id="screen-cart">
+  <div class="topbar">
+    <button class="ib" onclick="switchScreen('home')">←</button>
+    <h2>ตะกร้าสินค้า</h2>
+    <div style="width:34px"></div>
+  </div>
+  <div id="cartBody"></div>
+</div>
+
+<!-- ===================== ACCOUNT (placeholder) ===================== -->
+<div class="screen" id="screen-account">
+  <div class="topbar">
+    <button class="ib" onclick="switchScreen('home')">←</button>
+    <h2>บัญชีของฉัน</h2>
+    <div style="width:34px"></div>
+  </div>
+  <div class="empty-cart">
+    <div class="ic">👤</div>
+    <p>ระบบสมาชิก/เข้าสู่ระบบ<br>จะเปิดให้ใช้งานเมื่อเชื่อมต่อระบบหลังบ้าน</p>
+  </div>
+</div>
+
+<!-- ===================== Bottom nav ===================== -->
+<div class="nav" id="bottomNav">
+  <button class="active" data-tab="home" onclick="switchScreen('home')"><span class="ic">🏠</span>หน้าแรก</button>
+  <button data-tab="browse" onclick="switchScreen('browse');openBrowseAll()"><span class="ic">▦</span>หมวดหมู่</button>
+  <button data-tab="cart" onclick="switchScreen('cart')"><span class="ic">🛒<span class="badge" id="navCartBadge" style="display:none">0</span></span>ตะกร้า</button>
+  <button data-tab="account" onclick="switchScreen('account')"><span class="ic">👤</span>บัญชี</button>
+</div>
+
+<div class="ts" id="ts" class="toast"></div>
+
+<div class="ov" id="checkoutOv">
+  <div class="modal">
+    <div class="ic">✓</div>
+    <h3>ตัวอย่างการสั่งซื้อ</h3>
+    <p>นี่คือหน้าตัวอย่างฝั่งลูกค้าเท่านั้น เมื่อเชื่อมต่อระบบหลังบ้านแล้ว ออเดอร์นี้จะถูกบันทึกและส่งแจ้งเตือนไปยังร้านจริง</p>
+    <button onclick="closeCheckout()">ตกลง</button>
+  </div>
+</div>
 
 <script>
-const RECENTS_KEY = 'analyzer_recents_v1';
-const APIKEY_KEY = 'analyzer_apikey_v1';
-let chart, candleSeries, ema10Series, ema20Series, ema50Series;
-
-const TIMEFRAMES = [
-  { key:'15min', label:'15 นาที', interval:'15min', outputsize:260, periodTh:'ในช่วงข้อมูลล่าสุด' },
-  { key:'1h',    label:'1 ชม.',   interval:'1h',    outputsize:260, periodTh:'ในช่วงข้อมูลล่าสุด' },
-  { key:'1day',  label:'รายวัน',  interval:'1day',  outputsize:260, periodTh:'ในรอบปีที่ผ่านมา' },
-  { key:'1week', label:'รายสัปดาห์', interval:'1week', outputsize:208, periodTh:'ในรอบหลายปีที่ผ่านมา' },
-  { key:'1month',label:'รายเดือน', interval:'1month', outputsize:180, periodTh:'ในระยะยาวที่ดึงข้อมูลมา' },
+/* ================= ข้อมูลสินค้า (ตัวอย่าง — ยังไม่เชื่อมระบบหลังบ้าน) ================= */
+var CATS = [
+  {id:'drink', name:'เครื่องดื่ม', icon:'🥤', cls:'c1'},
+  {id:'snack', name:'ขนมขบเคี้ยว', icon:'🍿', cls:'c2'},
+  {id:'house', name:'ของใช้ในบ้าน', icon:'🧴', cls:'c3'},
+  {id:'chill', name:'ของแช่เย็น', icon:'🧊', cls:'c4'},
+  {id:'all',   name:'ทั้งหมด', icon:'▦', cls:'c5'}
 ];
-let currentTF = TIMEFRAMES[2]; // default: รายวัน
 
-function renderTfButtons(){
-  const el = document.getElementById('tfRow');
-  el.innerHTML = TIMEFRAMES.map(tf=>`<button class="tf-btn ${tf.key===currentTF.key?'active':''}" data-tf="${tf.key}">${tf.label}</button>`).join('');
-  el.querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      currentTF = TIMEFRAMES.find(t=>t.key===b.dataset.tf);
-      renderTfButtons();
-      const sym = document.getElementById('tickerInput').value;
-      if(sym.trim()) runAnalysis(sym);
+var PRODUCTS = [
+  {id:'p1',  cat:'drink', sub:'น้ำดื่ม',    name:'น้ำดื่มคริสตัล 600 มล.',      unit:'แพ็ค 6 ขวด', price:35, emoji:'💧', best:1},
+  {id:'p2',  cat:'drink', sub:'น้ำอัดลม',   name:'โค้ก 1.25 ลิตร',              unit:'ขวด',        price:20, emoji:'🥤', best:3},
+  {id:'p3',  cat:'drink', sub:'น้ำอัดลม',   name:'เป๊ปซี่ 1.45 ลิตร',            unit:'ขวด',        price:20, emoji:'🥤'},
+  {id:'p4',  cat:'drink', sub:'นม',        name:'นมไทย-เดนมาร์ค 225 มล.',       unit:'แพ็ค 4 กล่อง', price:28, emoji:'🥛'},
+  {id:'p5',  cat:'drink', sub:'น้ำผลไม้',   name:'น้ำส้มมินิทเมด 1 ลิตร',        unit:'ขวด',        price:39, emoji:'🧃'},
+  {id:'p6',  cat:'drink', sub:'ชา-กาแฟ',   name:'โออิชิ กรีนที 380 มล.',        unit:'ขวด',        price:15, emoji:'🍵'},
+  {id:'p7',  cat:'drink', sub:'ชา-กาแฟ',   name:'กาแฟกระป๋องเบอร์ดี้ 180 มล.',   unit:'กระป๋อง',    price:18, emoji:'☕'},
+
+  {id:'p8',  cat:'snack', sub:'มาม่า-บะหมี่', name:'มาม่า รสหมูสับ',             unit:'แพ็ค 10 ซอง', price:55, emoji:'🍜', best:2},
+  {id:'p9',  cat:'snack', sub:'มันฝรั่ง-ขนมกรุบ', name:'เลย์ คลาสสิค 48 กรัม',    unit:'ซอง',        price:20, emoji:'🍟'},
+  {id:'p10', cat:'snack', sub:'ช็อกโกแลต-ลูกอม', name:'โอรีโอ้ 133 กรัม',        unit:'แพ็ค',       price:25, emoji:'🍪'},
+  {id:'p11', cat:'snack', sub:'มันฝรั่ง-ขนมกรุบ', name:'ทาโร่ 60 กรัม',           unit:'ซอง',        price:12, emoji:'🦐'},
+  {id:'p12', cat:'snack', sub:'ช็อกโกแลต-ลูกอม', name:'ป็อกกี้ ช็อกโกแลต',       unit:'กล่อง',      price:30, emoji:'🍫'},
+
+  {id:'p13', cat:'house', sub:'กระดาษ-ทิชชู่', name:'กระดาษทิชชู่สก๊อตต์',        unit:'แพ็ค 6 ม้วน', price:69, emoji:'🧻'},
+  {id:'p14', cat:'house', sub:'ผลิตภัณฑ์ซักล้าง', name:'ผงซักฟอกบรีส',           unit:'ถุง',        price:65, emoji:'🧴'},
+  {id:'p15', cat:'house', sub:'ผลิตภัณฑ์ซักล้าง', name:'น้ำยาล้างจาน',           unit:'ขวด',        price:55, emoji:'🧼'},
+  {id:'p16', cat:'house', sub:'อื่นๆ',       name:'ถุงขยะดำ',                  unit:'แพ็ค 10 ใบ', price:25, emoji:'🗑️'},
+
+  {id:'p17', cat:'chill', sub:'ไอศกรีม',    name:'ไอศกรีมวอลล์',                unit:'ถ้วย',       price:35, emoji:'🍦'},
+  {id:'p18', cat:'chill', sub:'เนื้อสัตว์-ไส้กรอก', name:'ไส้กรอกซีพี',          unit:'แพ็ค',       price:45, emoji:'🌭'},
+  {id:'p19', cat:'chill', sub:'นม-โยเกิร์ต', name:'นมเปรี้ยวยาคูลท์',           unit:'แพ็ค 5 ขวด', price:30, emoji:'🧃'},
+  {id:'p20', cat:'chill', sub:'เนื้อสัตว์-ไส้กรอก', name:'เนื้อหมูสไลซ์ 500 กรัม', unit:'แพ็ค',      price:89, emoji:'🥩'}
+];
+
+var FREE_SHIP_MIN = 199;
+var SHIP_FEE = 20;
+
+var cart = {};              // {productId: qty}
+var browse = {mode:'all', catId:null, sub:'ทั้งหมด', query:''};
+
+function Q(id){return document.getElementById(id)}
+function baht(n){return '฿'+Number(n).toLocaleString('th-TH')}
+function findProduct(id){return PRODUCTS.find(function(p){return p.id===id})}
+
+/* ================= Toast ================= */
+function toast(msg){
+  var t=Q('ts');
+  t.textContent=msg;
+  t.classList.add('on');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.classList.remove('on')},2200);
+}
+
+/* ================= Screen switching ================= */
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on')});
+  Q('screen-'+name).classList.add('on');
+  document.querySelectorAll('#bottomNav button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab===name);
+  });
+  window.scrollTo({top:0});
+}
+
+/* ================= Cart logic ================= */
+function cartCount(){var c=0;for(var k in cart)c+=cart[k];return c}
+function cartSubtotal(){var s=0;for(var k in cart){var p=findProduct(k);if(p)s+=p.price*cart[k];}return s}
+
+function addToCart(id){
+  cart[id]=(cart[id]||0)+1;
+  refreshAll();
+  toast((findProduct(id)||{}).name+' ถูกเพิ่มลงตะกร้าแล้ว');
+}
+function decFromCart(id){
+  if(cart[id]){cart[id]--;if(cart[id]<=0)delete cart[id];}
+  refreshAll();
+}
+function removeFromCart(id){
+  delete cart[id];
+  refreshAll();
+}
+
+function refreshAll(){
+  updateCartBadges();
+  renderBestSellers();
+  if(Q('screen-browse').classList.contains('on')) renderBrowseList();
+  if(Q('screen-cart').classList.contains('on')) renderCart();
+}
+
+function updateCartBadges(){
+  var c=cartCount();
+  var navB=Q('navCartBadge'), brB=Q('cartBadgeBrowse');
+  if(c>0){
+    navB.style.display='grid';navB.textContent=c;
+    brB.style.display='grid';brB.textContent=c;
+  }else{
+    navB.style.display='none';
+    brB.style.display='none';
+  }
+}
+
+/* ================= Home: category grid ================= */
+function renderCatGrid(){
+  Q('catGrid').innerHTML = CATS.map(function(c){
+    return '<button class="cat-tile" onclick="'+(c.id==='all'?'switchScreen(\'browse\');openBrowseAll()':'openCategory(\''+c.id+'\')')+'">'
+      +'<div class="ic '+c.cls+'">'+c.icon+'</div><span>'+c.name+'</span></button>';
+  }).join('');
+}
+
+/* ================= Home: best sellers ================= */
+function renderBestSellers(){
+  var list = PRODUCTS.filter(function(p){return p.best}).sort(function(a,b){return a.best-b.best});
+  Q('bestSellers').innerHTML = list.map(function(p){
+    return '<div class="bs-card">'
+      +'<div class="bs-rank">'+p.best+'</div>'
+      +'<div class="bs-thumb">'+p.emoji+'</div>'
+      +'<div class="bs-name">'+p.name+'</div>'
+      +'<div class="bs-unit">'+p.unit+'</div>'
+      +'<div class="bs-bot"><span class="bs-price">'+baht(p.price)+'</span>'
+      +'<button class="add-btn" onclick="addToCart(\''+p.id+'\')">+</button></div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ================= Browse / category screen ================= */
+function openCategory(catId){
+  browse = {mode:'category', catId:catId, sub:'ทั้งหมด', query:''};
+  switchScreen('browse');
+  renderBrowse();
+}
+function openBrowseAll(){
+  browse = {mode:'all', catId:null, sub:'ทั้งหมด', query:''};
+  renderBrowse();
+}
+function doSearch(){
+  var q = Q('searchInput').value.trim();
+  if(!q){toast('พิมพ์คำค้นหาก่อนนะ');return;}
+  browse = {mode:'search', catId:null, sub:'ทั้งหมด', query:q};
+  switchScreen('browse');
+  renderBrowse();
+}
+
+function currentCatMeta(){return CATS.find(function(c){return c.id===browse.catId})}
+
+function renderBrowse(){
+  renderBrowseTitle();
+  renderBrowseChips();
+  renderBrowseList();
+}
+
+function renderBrowseTitle(){
+  if(browse.mode==='category'){
+    Q('browseTitle').textContent = (currentCatMeta()||{}).name || 'หมวดหมู่';
+  }else if(browse.mode==='search'){
+    Q('browseTitle').textContent = 'ผลการค้นหา: '+browse.query;
+  }else{
+    Q('browseTitle').textContent = 'สินค้าทั้งหมด';
+  }
+}
+
+function renderBrowseChips(){
+  var el=Q('browseChips');
+  if(browse.mode==='search'){ el.innerHTML=''; return; }
+
+  var chips, getLabel, isOn, onClick;
+  if(browse.mode==='category'){
+    var subs = ['ทั้งหมด'];
+    PRODUCTS.filter(function(p){return p.cat===browse.catId}).forEach(function(p){
+      if(subs.indexOf(p.sub)===-1) subs.push(p.sub);
     });
-  });
-}
-
-function initChart(){
-  const el = document.getElementById('chart');
-  chart = LightweightCharts.createChart(el, {
-    height: 340,
-    layout: { background:{color:'transparent'}, textColor:'#63695d', fontFamily:'IBM Plex Mono, monospace', fontSize:11 },
-    grid: { vertLines:{color:'#efece2'}, horzLines:{color:'#efece2'} },
-    rightPriceScale:{ borderColor:'#dbd5c4' },
-    timeScale:{ borderColor:'#dbd5c4' },
-    crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
-  });
-  candleSeries = chart.addCandlestickSeries({
-    upColor:'#1f7d6c', downColor:'#af3f2a', borderVisible:false,
-    wickUpColor:'#1f7d6c', wickDownColor:'#af3f2a'
-  });
-  ema10Series = chart.addLineSeries({ color:'#a97c2f', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  ema20Series = chart.addLineSeries({ color:'#1f7d6c', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  ema50Series = chart.addLineSeries({ color:'#5a6fb0', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-
-  new ResizeObserver(entries=>{
-    if(!entries.length) return;
-    chart.applyOptions({ width: entries[0].contentRect.width });
-  }).observe(el);
-}
-
-function ema(values, period){
-  const k = 2/(period+1);
-  const out = [];
-  let prev = null;
-  values.forEach((v,i)=>{
-    if(i < period-1){ out.push(null); return; }
-    if(prev === null){
-      const seed = values.slice(i-period+1, i+1).reduce((a,b)=>a+b,0)/period;
-      prev = seed;
-    } else {
-      prev = v*k + prev*(1-k);
-    }
-    out.push(prev);
-  });
-  return out;
-}
-
-function getRecents(){
-  try{ return JSON.parse(localStorage.getItem(RECENTS_KEY) || '[]'); }catch(e){ return []; }
-}
-function addRecent(sym){
-  let r = getRecents().filter(s=>s!==sym);
-  r.unshift(sym);
-  r = r.slice(0,6);
-  localStorage.setItem(RECENTS_KEY, JSON.stringify(r));
-  renderRecents();
-}
-function renderRecents(){
-  const el = document.getElementById('recentSyms');
-  el.innerHTML = getRecents().map(s=>`<button data-sym="${s}">${s}</button>`).join('');
-  el.querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      document.getElementById('tickerInput').value = b.dataset.sym;
-      runAnalysis(b.dataset.sym);
-    });
-  });
-}
-
-function setStatus(msg, isError){
-  const el = document.getElementById('statusMsg');
-  el.style.display = 'block';
-  el.className = 'status-msg' + (isError?' error':'');
-  el.textContent = msg;
-  document.getElementById('resultArea').style.display = 'none';
-}
-
-async function fetchSeries(symbol, apiKey, tf){
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=${tf.interval}&outputsize=${tf.outputsize}&apikey=${apiKey}`;
-  const res = await fetch(url);
-  const json = await res.json();
-  if(json.status === 'error' || !json.values) throw new Error(json.message || 'หาสัญลักษณ์นี้ไม่พบ หรือช่วงเวลานี้ไม่มีข้อมูล');
-  const isIntraday = tf.interval.indexOf('min') !== -1 || tf.interval.indexOf('h') !== -1;
-  return json.values.slice().reverse().map(v=>({
-    time: isIntraday ? Math.floor(new Date(v.datetime.replace(' ','T')+'Z').getTime()/1000) : v.datetime,
-    displayTime: v.datetime,
-    open: parseFloat(v.open), high: parseFloat(v.high), low: parseFloat(v.low), close: parseFloat(v.close),
-    volume: parseFloat(v.volume || 0)
-  }));
-}
-
-function pct(a,b){ return ((a-b)/b*100); }
-
-async function fetchNextEarnings(symbol, apiKey){
-  try{
-    const url = `https://api.twelvedata.com/earnings?symbol=${encodeURIComponent(symbol)}&period=next&apikey=${apiKey}`;
-    const res = await fetch(url);
-    const json = await res.json();
-    if(json.status === 'error' || !json.earnings || !json.earnings.length){
-      return { ok:false, reason: (json.message||'ไม่มีข้อมูล') };
-    }
-    return { ok:true, date: json.earnings[0].date, time: json.earnings[0].time };
-  }catch(e){
-    return { ok:false, reason:'เชื่อมต่อไม่ได้' };
+    chips = subs;
+    el.innerHTML = chips.map(function(s){
+      return '<button class="chip '+(browse.sub===s?'on':'')+'" onclick="setSub(\''+s+'\')">'+s+'</button>';
+    }).join('');
+  }else{
+    chips = ['ทั้งหมด'].concat(CATS.filter(function(c){return c.id!=='all'}).map(function(c){return c.name}));
+    el.innerHTML = chips.map(function(name,i){
+      var isAll = i===0;
+      var cat = isAll?null:CATS.find(function(c){return c.name===name});
+      var onFn = isAll?'openBrowseAll()':('openCategory(\''+cat.id+'\')');
+      return '<button class="chip '+(isAll?'on':'')+'" onclick="'+onFn+'">'+name+'</button>';
+    }).join('');
   }
 }
 
-function daysBetween(dateStr){
-  const target = new Date(dateStr+'T00:00:00');
-  const now = new Date();
-  now.setHours(0,0,0,0);
-  return Math.round((target-now)/(1000*60*60*24));
+function setSub(s){
+  browse.sub = s;
+  renderBrowseChips();
+  renderBrowseList();
 }
 
-function addDays(dateStr, n){
-  const d = new Date(dateStr+'T00:00:00');
-  d.setDate(d.getDate()+n);
-  return d.toISOString().slice(0,10);
+function getFilteredProducts(){
+  var list = PRODUCTS;
+  if(browse.mode==='category'){
+    list = list.filter(function(p){return p.cat===browse.catId});
+    if(browse.sub && browse.sub!=='ทั้งหมด') list = list.filter(function(p){return p.sub===browse.sub});
+  }else if(browse.mode==='search'){
+    var q = browse.query.toLowerCase();
+    list = list.filter(function(p){return p.name.toLowerCase().indexOf(q)>-1});
+  }
+  return list;
 }
 
-function dateThLabel(dateStr){
-  const d = new Date(dateStr+'T00:00:00');
-  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function renderEntryWindow(earningsDateStr, a){
-  const winStart = addDays(earningsDateStr, 2);
-  const winEnd = addDays(earningsDateStr, 5);
-  const d = daysBetween(earningsDateStr);
-  const trendOk = !(a.trend === 'down' && !a.reversalUpSignal);
-  return `
-    <div class="earnings-date-box">
-      <div>
-        <div class="d-num mono">${dateThLabel(winStart)} – ${dateThLabel(winEnd)}</div>
-        <div class="d-label">ช่วงวันที่แนะนำให้เริ่มพิจารณา (2-5 วันหลังประกาศผล ${dateThLabel(earningsDateStr)})</div>
-      </div>
-    </div>
-    <p>${trendOk
-      ? 'ช่วงวันที่นี้คำนวณจากวันประกาศงบ+2 ถึง+5 วัน เป็นกรอบเวลาที่ราคามักนิ่งพอจะประเมินได้หลังรับรู้ข่าว ไม่ใช่วันที่ "ต้องซื้อ" แต่เป็นวันที่ "เริ่มดูสัญญาณเทคนิคัลได้แม่นขึ้น" ควรดูทรงกราฟ/pattern ด้านบนประกอบตอนถึงช่วงนั้นจริงอีกที เพราะราคาจะเปลี่ยนไปตามผลงบจริง'
-      : 'อย่างไรก็ตาม <b>ทรงกราฟตอนนี้ยังเป็น downtrend ไม่มีสัญญาณกลับตัว</b> แม้จะถึงช่วงวันที่แนะนำข้างต้นแล้ว ก็ไม่ควรถือเป็นสัญญาณซื้อทันที ต้องรอให้ทรงกราฟกลับตัวจริงร่วมด้วย ไม่ใช่ดูแค่วันที่ผ่านไปเฉยๆ'}</p>
-    <p style="font-size:11.5px;">*วันที่คำนวณล่วงหน้าจากวันประกาศผล ยังไม่ทราบผลประกอบการจริง ราคาอาจเปลี่ยนทิศทางไปจากที่คาดได้ทั้งหมดหลังงบออก</p>`;
-}
-
-function renderEarningsGuidance(earn, a, symbol){
-  const el = document.getElementById('earningsCard');
-  const thisYear = new Date().getFullYear();
-  const todayStr = new Date().toISOString().slice(0,10);
-
-  let earningsHtml = '';
-  let confirmedDate = null;
-
-  if(earn.ok && parseInt(earn.date.slice(0,4)) === thisYear){
-    confirmedDate = earn.date;
-    const d = daysBetween(earn.date);
-    const timeLabel = earn.time === 'Pre Market' ? 'ก่อนตลาดเปิด' : earn.time === 'After Hours' ? 'หลังตลาดปิด' : 'ไม่ระบุเวลา';
-    earningsHtml = `
-      <div class="earnings-date-box">
-        <div>
-          <div class="d-num mono">${earn.date}</div>
-          <div class="d-label">${timeLabel} · ${d>=0? `อีก ${d} วัน` : `ผ่านมาแล้ว ${Math.abs(d)} วัน`}</div>
-        </div>
-      </div>
-      ${renderEntryWindow(earn.date, a)}`;
-  } else {
-    earningsHtml = `
-      <p><b>ดึงวันประกาศงบอัตโนมัติไม่ได้</b> (API key ฟรีของ Twelve Data ไม่รวมสิทธิ์ endpoint นี้) ตรวจสอบวันประกาศงบของ ${symbol} ปี ${thisYear} ได้ฟรีที่
-      <a href="https://www.nasdaq.com/market-activity/stocks/${symbol.toLowerCase()}/earnings" target="_blank">nasdaq.com</a> หรือ
-      <a href="https://www.earningswhispers.com/stocks/${symbol.toLowerCase()}" target="_blank">earningswhispers.com</a></p>
-      <p>เมื่อรู้วันที่แล้ว <b>กรอกที่นี่</b> เพื่อให้ระบบคำนวณช่วงวันที่แนะนำให้เริ่มพิจารณาเข้าซื้อให้ทันที:</p>
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
-        <input type="date" id="manualEarnDate" value="${todayStr}" style="background:var(--bg); border:1px solid var(--line); border-radius:3px; color:var(--ink); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:7px 10px;">
-        <button id="manualEarnBtn" class="tf-btn">คำนวณ</button>
-      </div>
-      <div id="manualEarnResult"></div>`;
-  }
-
-  el.innerHTML = earningsHtml;
-
-  const btn = document.getElementById('manualEarnBtn');
-  if(btn){
-    btn.addEventListener('click', ()=>{
-      const val = document.getElementById('manualEarnDate').value;
-      if(!val) return;
-      document.getElementById('manualEarnResult').innerHTML = renderEntryWindow(val, a);
-    });
-  }
-}
-
-function buildAnalysis(bars, symbol, tf){
-  const closes = bars.map(b=>b.close);
-  const vols = bars.map(b=>b.volume);
-  const last = bars[bars.length-1];
-  const prev = bars[bars.length-2];
-
-  const e10 = ema(closes,10), e20 = ema(closes,20), e50 = ema(closes,50);
-  const lastE10 = e10[e10.length-1], lastE20 = e20[e20.length-1], lastE50 = e50[e50.length-1];
-
-  const high52 = Math.max(...bars.map(b=>b.high));
-  const low52 = Math.min(...bars.map(b=>b.low));
-  const fromHigh = pct(last.close, high52);
-  const fromLow = pct(last.close, low52);
-
-  const recentVol = vols.slice(-5).reduce((a,b)=>a+b,0)/5;
-  const priorVol = vols.slice(-25,-5).reduce((a,b)=>a+b,0)/20;
-  const volTrendUp = recentVol > priorVol * 1.1;
-  const volTrendDown = recentVol < priorVol * 0.9;
-
-  let trend = 'sideways';
-  if(lastE10 && lastE20 && lastE50){
-    if(last.close < lastE10 && lastE10 < lastE20 && lastE20 < lastE50) trend = 'down';
-    else if(last.close > lastE10 && lastE10 > lastE20 && lastE20 > lastE50) trend = 'up';
-  }
-
-  const bodyToday = last.close - last.open;
-  const bodyPrev = prev.close - prev.open;
-  const bullishEngulf = bodyToday > 0 && bodyPrev < 0 && last.close > prev.open && last.open < prev.close;
-  const bearishEngulf = bodyToday < 0 && bodyPrev > 0 && last.close < prev.open && last.open > prev.close;
-  const range = last.high - last.low;
-  const lowerWick = Math.min(last.open,last.close) - last.low;
-  const hammer = range > 0 && lowerWick > (Math.abs(bodyToday) * 2) && (last.close - last.low) > range*0.6;
-
-  const reversalUpSignal = bullishEngulf || hammer;
-  const reversalDownSignal = bearishEngulf;
-
-  const changePct = pct(last.close, prev.close);
-
-  return {
-    last, prev, lastE10, lastE20, lastE50, high52, low52, fromHigh, fromLow,
-    volTrendUp, volTrendDown, trend, reversalUpSignal, reversalDownSignal, changePct,
-    e10, e20, e50, periodTh: tf.periodTh
-  };
-}
-
-function detectCandlePatterns(bars){
-  const patterns = [];
-  const n = bars.length;
-  const c0 = bars[n-1], c1 = bars[n-2], c2 = bars[n-3];
-  const body = c=>Math.abs(c.close-c.open);
-  const range = c=>c.high-c.low;
-  const upperWick = c=>c.high-Math.max(c.open,c.close);
-  const lowerWick = c=>Math.min(c.open,c.close)-c.low;
-  const isBull = c=>c.close>c.open;
-  const isBear = c=>c.close<c.open;
-
-  if(range(c0)>0 && body(c0) <= range(c0)*0.1){
-    patterns.push({name:'Doji', dir:'neutral', desc:'แท่งเทียนที่ราคาเปิดกับปิดใกล้เคียงกันมาก บ่งชี้ว่าแรงซื้อกับแรงขายสมดุลกัน ตลาดกำลังลังเล มักเป็นสัญญาณเตือนว่าเทรนด์เดิมอาจเปลี่ยนทิศ ควรรอแท่งถัดไปยืนยันก่อน'});
-  }
-
-  if(range(c0)>0 && lowerWick(c0) > body(c0)*2 && upperWick(c0) < body(c0)*0.5 && (c0.close-c0.low) > range(c0)*0.6){
-    patterns.push({name:'Hammer', dir:'bull', desc:'แท่งเทียนไส้ล่างยาว ตัวแท่งเล็กอยู่ด้านบน สื่อว่าระหว่างช่วงเวลานั้นราคาถูกกดลงแรงแต่แรงซื้อกลับเข้ามาดันราคาปิดขึ้นมาใกล้จุดสูงสุด มักเป็นสัญญาณกลับตัวเชิงบวกถ้าเกิดหลังช่วงขาลง'});
-  }
-
-  if(range(c0)>0 && upperWick(c0) > body(c0)*2 && lowerWick(c0) < body(c0)*0.5 && (c0.high-c0.close) < range(c0)*0.4){
-    const priorTrendUp = bars[n-2] && bars[n-6] ? bars[n-2].close > bars[n-6].close : false;
-    if(priorTrendUp){
-      patterns.push({name:'Shooting Star', dir:'bear', desc:'แท่งเทียนไส้บนยาว ตัวแท่งเล็กอยู่ด้านล่าง เกิดหลังราคาวิ่งขึ้นมาก่อนหน้า สื่อว่าแรงซื้อดันราคาขึ้นระหว่างช่วงแต่ถูกแรงขายกดกลับลงมาปิดใกล้จุดต่ำ มักเป็นสัญญาณเตือนว่าแรงซื้อเริ่มอ่อนกำลังลง'});
-    } else {
-      patterns.push({name:'Inverted Hammer', dir:'bull', desc:'แท่งเทียนไส้บนยาว ตัวแท่งเล็กอยู่ด้านล่าง เกิดหลังช่วงขาลง สื่อว่าเริ่มมีแรงซื้อเข้ามาทดสอบราคาสูงขึ้น แม้จะถูกกดกลับมาบ้าง แต่เป็นสัญญาณเริ่มต้นว่าแรงขายอาจเริ่มอ่อนแรง'});
-    }
-  }
-
-  const b0 = c0.close-c0.open, b1 = c1.close-c1.open;
-  if(b0>0 && b1<0 && c0.close>c1.open && c0.open<c1.close){
-    patterns.push({name:'Bullish Engulfing', dir:'bull', desc:'แท่งเทียนบวกล่าสุด มีตัวแท่งใหญ่ครอบคลุมแท่งลบก่อนหน้าทั้งแท่ง สื่อว่าแรงซื้อเข้ามาเปลี่ยนทิศทางแบบเด็ดขาด เป็นสัญญาณกลับตัวเชิงบวกที่ค่อนข้างหนักแน่น'});
-  }
-  if(b0<0 && b1>0 && c0.close<c1.open && c0.open>c1.close){
-    patterns.push({name:'Bearish Engulfing', dir:'bear', desc:'แท่งเทียนลบล่าสุด มีตัวแท่งใหญ่ครอบคลุมแท่งบวกก่อนหน้าทั้งแท่ง สื่อว่าแรงขายเข้ามาเปลี่ยนทิศทางแบบเด็ดขาด เป็นสัญญาณกลับตัวเชิงลบที่ค่อนข้างหนักแน่น'});
-  }
-
-  if(c2 && isBear(c2) && body(c2) > range(c2)*0.5 && body(c1) < range(c2)*0.3 &&
-     isBull(c0) && body(c0) > range(c2)*0.4 && c0.close > (c2.open+c2.close)/2){
-    patterns.push({name:'Morning Star', dir:'bull', desc:'รูปแบบ 3 แท่ง: แท่งลบตัวใหญ่ ตามด้วยแท่งตัวเล็กที่ลังเล แล้วปิดท้ายด้วยแท่งบวกตัวใหญ่ที่ดันราคากลับขึ้นมาเกินครึ่งของแท่งแรก เป็นสัญญาณกลับตัวเชิงบวกที่ค่อนข้างน่าเชื่อถือเมื่อเกิดท้ายขาลง'});
-  }
-  if(c2 && isBull(c2) && body(c2) > range(c2)*0.5 && body(c1) < range(c2)*0.3 &&
-     isBear(c0) && body(c0) > range(c2)*0.4 && c0.close < (c2.open+c2.close)/2){
-    patterns.push({name:'Evening Star', dir:'bear', desc:'รูปแบบ 3 แท่ง: แท่งบวกตัวใหญ่ ตามด้วยแท่งตัวเล็กที่ลังเล แล้วปิดท้ายด้วยแท่งลบตัวใหญ่ที่ดันราคากลับลงมาเกินครึ่งของแท่งแรก เป็นสัญญาณกลับตัวเชิงลบที่ค่อนข้างน่าเชื่อถือเมื่อเกิดท้ายขาขึ้น'});
-  }
-
-  return patterns;
-}
-
-function findSwings(bars, lb){
-  const highs = [], lows = [];
-  for(let i=lb;i<bars.length-lb;i++){
-    let isHigh=true, isLow=true;
-    for(let j=i-lb;j<=i+lb;j++){
-      if(j===i) continue;
-      if(bars[j].high >= bars[i].high) isHigh=false;
-      if(bars[j].low <= bars[i].low) isLow=false;
-    }
-    if(isHigh) highs.push({i, price:bars[i].high});
-    if(isLow) lows.push({i, price:bars[i].low});
-  }
-  return {highs, lows};
-}
-
-function detectStructurePatterns(bars){
-  const patterns = [];
-  const {highs, lows} = findSwings(bars, 3);
-  const lastClose = bars[bars.length-1].close;
-
-  if(highs.length>=2 && lows.length>=2){
-    const h1=highs[highs.length-2], h2=highs[highs.length-1];
-    const l1=lows[lows.length-2], l2=lows[lows.length-1];
-    if(h2.price>h1.price && l2.price>l1.price){
-      patterns.push({name:'Higher Highs & Higher Lows', dir:'bull', desc:'จุดสูงและจุดต่ำที่แกว่งล่าสุดต่างก็สูงกว่าจุดก่อนหน้า เป็นโครงสร้างคลาสสิกของแนวโน้มขาขึ้นที่ยังแข็งแรง'});
-    } else if(h2.price<h1.price && l2.price<l1.price){
-      patterns.push({name:'Lower Highs & Lower Lows', dir:'bear', desc:'จุดสูงและจุดต่ำที่แกว่งล่าสุดต่างก็ต่ำกว่าจุดก่อนหน้า เป็นโครงสร้างคลาสสิกของแนวโน้มขาลงที่ยังแข็งแรง'});
-    }
-  }
-
-  if(highs.length>=2){
-    const h1=highs[highs.length-2], h2=highs[highs.length-1];
-    const diffPct = Math.abs(h2.price-h1.price)/h1.price*100;
-    if(diffPct < 2.5){
-      const between = lows.filter(l=>l.i>h1.i && l.i<h2.i).sort((a,b)=>a.price-b.price)[0];
-      if(between && (h1.price-between.price)/h1.price*100 > 4){
-        const broken = lastClose < between.price;
-        patterns.push({name: broken?'Double Top (ยืนยันแล้ว)':'Double Top (กำลังก่อตัว)', dir:'bear',
-          desc:'ราคาขึ้นไปทำจุดสูงสองครั้งในระดับใกล้เคียงกัน คั่นกลางด้วยการย่อลงพอสมควร มักเตือนว่าแรงซื้อเริ่มหมดแรงหลังพยายามทำจุดสูงใหม่ไม่สำเร็จ'
-          + (broken?' ตอนนี้ราคาหลุดจุดต่ำระหว่างสองยอดไปแล้ว ถือว่ารูปแบบนี้ยืนยันสมบูรณ์':' ยังต้องรอราคาหลุดจุดต่ำระหว่างสองยอดเพื่อยืนยัน')});
-      }
-    }
-  }
-  if(lows.length>=2){
-    const l1=lows[lows.length-2], l2=lows[lows.length-1];
-    const diffPct = Math.abs(l2.price-l1.price)/l1.price*100;
-    if(diffPct < 2.5){
-      const between = highs.filter(h=>h.i>l1.i && h.i<l2.i).sort((a,b)=>b.price-a.price)[0];
-      if(between && (between.price-l1.price)/l1.price*100 > 4){
-        const broken = lastClose > between.price;
-        patterns.push({name: broken?'Double Bottom (ยืนยันแล้ว)':'Double Bottom (กำลังก่อตัว)', dir:'bull',
-          desc:'ราคาลงไปทำจุดต่ำสองครั้งในระดับใกล้เคียงกัน คั่นกลางด้วยการเด้งขึ้นพอสมควร มักเตือนว่าแรงขายเริ่มหมดแรงหลังพยายามทำจุดต่ำใหม่ไม่สำเร็จ'
-          + (broken?' ตอนนี้ราคาทะลุจุดสูงระหว่างสองก้นไปแล้ว ถือว่ารูปแบบนี้ยืนยันสมบูรณ์':' ยังต้องรอราคาทะลุจุดสูงระหว่างสองก้นเพื่อยืนยัน')});
-      }
-    }
-  }
-
-  return patterns;
-}
-
-function renderPatterns(patterns){
-  const el = document.getElementById('patternArea');
-  if(!patterns.length){
-    el.innerHTML = '<div class="pattern-empty">ยังไม่พบรูปแบบแท่งเทียนหรือโครงสร้างราคาที่ชัดเจนในข้อมูลล่าสุด</div>';
+function renderBrowseList(){
+  var list = getFilteredProducts();
+  if(!list.length){
+    Q('browseList').innerHTML = '<div class="empty-list">ไม่พบสินค้าในหมวดนี้</div>';
     return;
   }
-  const dirLabel = { bull:'บวก', bear:'ลบ', neutral:'กลาง' };
-  el.innerHTML = patterns.map(p=>`
-    <div class="pattern-item">
-      <div class="pattern-tag ${p.dir}">${dirLabel[p.dir]}</div>
-      <div class="pattern-body"><b>${p.name}</b><p>${p.desc}</p></div>
-    </div>`).join('');
+  Q('browseList').innerHTML = list.map(function(p){
+    var q = cart[p.id]||0;
+    var ctrl = q>0
+      ? '<div class="stepper"><button onclick="decFromCart(\''+p.id+'\')">−</button><span class="n">'+q+'</span><button onclick="addToCart(\''+p.id+'\')">+</button></div>'
+      : '<button class="add-btn" style="width:30px;height:30px;font-size:17px" onclick="addToCart(\''+p.id+'\')">+</button>';
+    return '<div class="prow">'
+      +'<div class="thumb">'+p.emoji+'</div>'
+      +'<div class="info"><div class="nm">'+p.name+'</div><div class="un">'+p.unit+'</div>'
+      +'<div class="bottom"><span class="pr">'+baht(p.price)+'</span>'+ctrl+'</div></div>'
+      +'</div>';
+  }).join('');
 }
 
-function fmt(n, d){ return n.toLocaleString('en-US', {minimumFractionDigits:d===undefined?2:d, maximumFractionDigits:d===undefined?2:d}); }
+/* ================= Cart screen ================= */
+function renderCart(){
+  var ids = Object.keys(cart);
+  var body = Q('cartBody');
 
-function renderNarrative(a, symbol){
-  const trendTh = a.trend === 'down' ? 'ขาลง (downtrend)' : a.trend === 'up' ? 'ขาขึ้น (uptrend)' : 'ไซด์เวย์/ยังไม่ชัดเจน (sideways)';
-
-  let obs = `ราคาปิดล่าสุดของ <b>${symbol}</b> อยู่ที่ <b>${fmt(a.last.close)}</b> ดอลลาร์ `;
-  obs += a.changePct >= 0 ? `บวก ${fmt(a.changePct)}% จากวันก่อน ` : `ลบ ${fmt(Math.abs(a.changePct))}% จากวันก่อน `;
-  obs += `ห่างจากจุดสูงสุด${a.periodTh} (${fmt(a.high52)}) อยู่ <b>${fmt(Math.abs(a.fromHigh))}%</b>`;
-  obs += a.fromHigh < -3 ? ' ซึ่งถือว่าห่างค่อนข้างมาก ' : ' ';
-  obs += `เส้นค่าเฉลี่ย <span class="term">EMA</span> ระยะสั้น-กลาง-ยาว (10/20/50 วัน) `;
-  if(a.trend === 'down') obs += 'เรียงตัวแบบราคาต่ำกว่าเส้นทุกเส้น และเส้นสั้นอยู่ต่ำกว่าเส้นยาว บ่งชี้แรงขายยังควบคุมทิศทางอยู่ ';
-  else if(a.trend === 'up') obs += 'เรียงตัวแบบราคาสูงกว่าเส้นทุกเส้น และเส้นสั้นอยู่เหนือเส้นยาว บ่งชี้แรงซื้อยังควบคุมทิศทางอยู่ ';
-  else obs += 'ยังเรียงตัวไม่ชัดเจน ราคาแกว่งอยู่ใกล้เส้นค่าเฉลี่ยหลายเส้น ';
-  obs += `ปริมาณการซื้อขาย 5 วันล่าสุดเทียบกับก่อนหน้า ${a.volTrendUp ? 'เพิ่มขึ้นชัดเจน' : a.volTrendDown ? 'ลดลงต่อเนื่อง' : 'ใกล้เคียงเดิม'} `;
-  if(a.reversalUpSignal) obs += '— และแท่งล่าสุดมีลักษณะแท่งเทียนกลับตัวเชิงบวก (bullish reversal candle) ให้เห็น ';
-  if(a.reversalDownSignal) obs += '— และแท่งล่าสุดมีลักษณะแท่งเทียนกลับตัวเชิงลบ (bearish reversal candle) ให้เห็น ';
-  document.getElementById('obsText').innerHTML = obs;
-
-  let summary = '';
-  if(a.trend === 'down'){
-    summary = a.reversalUpSignal
-      ? `ทรงกราฟยังอยู่ในช่วงขาลง แต่เริ่มมีสัญญาณกลับตัวเบื้องต้นให้เห็น (แท่งเทียน${a.volTrendUp?' พร้อมปริมาณสนับสนุน':''}) ยังต้องรอการยืนยันเพิ่มก่อนสรุปว่ากลับตัวจริง`
-      : `เป็น <b>downtrend ต่อเนื่องแบบไม่มีสัญญาณกลับตัว</b> ยังไม่มีจุดไหนในกราฟล่าสุดที่แสดงว่าแรงขายเริ่มหมด`;
-  } else if(a.trend === 'up'){
-    summary = a.reversalDownSignal
-      ? `ทรงกราฟยังอยู่ในช่วงขาขึ้น แต่เริ่มมีสัญญาณอ่อนแรงระยะสั้นให้เห็น ควรจับตาว่าจะพักฐานหรือกลับตัว`
-      : `เป็น <b>uptrend ต่อเนื่อง</b> ราคายืนเหนือเส้นค่าเฉลี่ยทุกเส้น ยังไม่มีสัญญาณอ่อนแรงชัดเจน`;
-  } else {
-    summary = `ทรงกราฟยังอยู่ในช่วง<b>สะสม/ไม่มีทิศทางชัดเจน</b> เส้นค่าเฉลี่ยยังไม่เรียงตัวเป็นระเบียบ ต้องรอราคาเลือกทางก่อน`;
-  }
-  document.getElementById('summaryText').innerHTML = summary;
-
-  const entryCard = document.getElementById('entryCard');
-  if(a.trend === 'down' && !a.reversalUpSignal){
-    entryCard.innerHTML = `
-      <p>ด้วยทรงกราฟตอนนี้ <b>ยังไม่มีจุดที่ยืนยันได้ทางเทคนิคัลว่าเหมาะเข้าซื้อ</b> เพราะไม่มีแนวรับ (support) ที่ผ่านการทดสอบแล้ว การเข้าซื้อตอนนี้เท่ากับสวนเทรนด์ที่ยังไม่กลับตัว</p>
-      <p>สัญญาณที่ควรรอก่อนพิจารณาเข้า:</p>
-      <p>1) แท่งเทียนกลับตัวชัดเจนพร้อมปริมาณเพิ่มขึ้น<br>
-      2) ราคาเริ่มแกว่งเป็นกรอบแคบ ไม่ทำจุดต่ำใหม่ต่อเนื่อง<br>
-      3) ราคายืนเหนือ EMA 10 วัน (${fmt(a.lastE10)}) ได้อย่างน้อย 2-3 วันติด<br>
-      4) ตรวจสอบวันประกาศผลประกอบการ (earnings) ที่จะถึงด้วยตัวเองก่อนตัดสินใจ</p>`;
-  } else if(a.trend === 'down' && a.reversalUpSignal){
-    entryCard.innerHTML = `
-      <p>เริ่มมีสัญญาณกลับตัวเบื้องต้น แต่ยังอยู่ใน downtrend หลัก ถ้าจะพิจารณาเข้าควรใช้เงินก้อนเล็ก (starter position) และรอดูว่าราคายืนเหนือ EMA 10 วัน (${fmt(a.lastE10)}) ได้ต่อเนื่องก่อนเพิ่มไม้ ตั้ง stop loss ไว้ใต้จุดต่ำของแท่งสัญญาณกลับตัว</p>`;
-  } else if(a.trend === 'up'){
-    entryCard.innerHTML = `
-      <p>อยู่ใน uptrend ที่ยังแข็งแรง จุดที่มักใช้พิจารณา (ไม่ใช่คำแนะนำตายตัว) คือรอราคาย่อกลับมาใกล้ EMA 20 วัน (${fmt(a.lastE20)}) แทนการไล่ซื้อตอนราคาวิ่งไกลจากเส้นค่าเฉลี่ยมากเกินไป และควรตั้ง stop loss ใต้ EMA 50 วัน (${fmt(a.lastE50)})</p>`;
-  } else {
-    entryCard.innerHTML = `
-      <p>ทรงกราฟยังไม่มีทิศทางชัดเจนพอจะประเมิน ควรรอราคาเลือกทาง (breakout จากกรอบ หรือหลุดกรอบลง) ก่อนตัดสินใจ</p>`;
-  }
-}
-
-function renderMetrics(a){
-  const items = [
-    { label:'EMA 10', value: fmt(a.lastE10) },
-    { label:'EMA 20', value: fmt(a.lastE20) },
-    { label:'EMA 50', value: fmt(a.lastE50) },
-    { label:'จุดสูงสุดในช่วงข้อมูล', value: fmt(a.high52) },
-    { label:'จุดต่ำสุดในช่วงข้อมูล', value: fmt(a.low52) },
-    { label:'ห่างจากจุดสูงสุด', value: (a.fromHigh>=0?'+':'')+fmt(a.fromHigh)+'%', cls: a.fromHigh>=0?'up':'down' },
-  ];
-  document.getElementById('metricGrid').innerHTML = items.map(it=>`
-    <div class="metric">
-      <div class="metric-label">${it.label}</div>
-      <div class="metric-value ${it.cls||''} mono">${it.value}</div>
-    </div>`).join('');
-}
-
-async function runAnalysis(symbolRaw){
-  const symbol = symbolRaw.trim().toUpperCase();
-  if(!symbol) return;
-  const apiKey = localStorage.getItem(APIKEY_KEY) || document.getElementById('apiKeyInput').value.trim();
-  if(!apiKey){
-    setStatus('ยังไม่ได้ใส่ API Key — กดปุ่ม ⚙ ด้านบนเพื่อตั้งค่าก่อน (ฟรีจาก twelvedata.com)', true);
+  if(!ids.length){
+    body.innerHTML = '<div class="empty-cart"><div class="ic">🛒</div><p>ยังไม่มีสินค้าในตะกร้า<br>เลือกซื้อสินค้าที่ถูกใจได้เลย</p>'
+      +'<button onclick="switchScreen(\'browse\');openBrowseAll()">เลือกซื้อสินค้า</button></div>';
     return;
   }
-  setStatus(`กำลังดึงข้อมูล ${symbol}...`);
-  try{
-    const bars = await fetchSeries(symbol, apiKey, currentTF);
-    if(bars.length < 55) throw new Error('ข้อมูลย้อนหลังไม่พอสำหรับคำนวณ');
 
-    document.getElementById('statusMsg').style.display = 'none';
-    document.getElementById('resultArea').style.display = 'block';
+  var rows = ids.map(function(id){
+    var p = findProduct(id), q = cart[id];
+    return '<div class="cart-row">'
+      +'<div class="thumb">'+p.emoji+'</div>'
+      +'<div class="info"><div class="nm">'+p.name+'</div><div class="un">'+p.unit+'</div>'
+      +'<div class="bottom-row"><span class="pr">'+baht(p.price*q)+'</span>'
+      +'<div class="stepper"><button onclick="decFromCart(\''+id+'\')">−</button><span class="n">'+q+'</span><button onclick="addToCart(\''+id+'\')">+</button></div></div></div>'
+      +'<button class="del" onclick="removeFromCart(\''+id+'\')">🗑️</button>'
+      +'</div>';
+  }).join('');
 
-    if(!chart) initChart();
-    candleSeries.setData(bars.map(b=>({ time:b.time, open:b.open, high:b.high, low:b.low, close:b.close })));
+  var subtotal = cartSubtotal();
+  var freeShip = subtotal >= FREE_SHIP_MIN;
+  var shipFee = freeShip ? 0 : SHIP_FEE;
+  var remain = FREE_SHIP_MIN - subtotal;
+  var total = subtotal + shipFee;
 
-    const closes = bars.map(b=>b.close);
-    const e10 = ema(closes,10), e20 = ema(closes,20), e50 = ema(closes,50);
-    ema10Series.setData(bars.map((b,i)=>e10[i]!==null?{time:b.time, value:e10[i]}:null).filter(Boolean));
-    ema20Series.setData(bars.map((b,i)=>e20[i]!==null?{time:b.time, value:e20[i]}:null).filter(Boolean));
-    ema50Series.setData(bars.map((b,i)=>e50[i]!==null?{time:b.time, value:e50[i]}:null).filter(Boolean));
-    chart.timeScale().fitContent();
+  var summary = '<div class="summary">'
+    +'<div class="r"><span>ค่าสินค้า</span><span>'+baht(subtotal)+'</span></div>'
+    +'<div class="r"><span>ค่าส่ง</span>'
+    +(freeShip ? '<small>ฟรี!</small>' : '<span>'+baht(shipFee)+'</span>')
+    +'</div>'
+    +(!freeShip ? '<div class="r"><small>ซื้อเพิ่มอีก '+baht(remain)+' รับส่งฟรี 🛵</small></div>' : '')
+    +'<div class="r total"><span>ยอดรวมทั้งสิ้น</span><b>'+baht(total)+'</b></div>'
+    +'</div>';
 
-    const last = bars[bars.length-1];
-    document.getElementById('qSym').textContent = symbol;
-    document.getElementById('qPrice').textContent = fmt(last.close);
-    const chg = pct(last.close, bars[bars.length-2].close);
-    const chgEl = document.getElementById('qChange');
-    chgEl.textContent = (chg>=0?'+':'')+fmt(chg)+'%';
-    chgEl.className = 'quote-change mono ' + (chg>=0?'up':'down');
-    document.getElementById('qTime').textContent = 'ข้อมูลล่าสุด: ' + last.displayTime + ' (' + currentTF.label + ')';
-
-    const a = buildAnalysis(bars, symbol, currentTF);
-    renderMetrics(a);
-    renderNarrative(a, symbol);
-    const patterns = [...detectCandlePatterns(bars), ...detectStructurePatterns(bars)];
-    renderPatterns(patterns);
-
-    const earn = await fetchNextEarnings(symbol, apiKey);
-    renderEarningsGuidance(earn, a, symbol);
-
-    addRecent(symbol);
-
-  }catch(err){
-    setStatus('เกิดข้อผิดพลาด: ' + err.message, true);
-  }
+  body.innerHTML = '<div class="cart-list">'+rows+'</div>'+summary
+    +'<button class="checkout-btn" onclick="doCheckout()">ดำเนินการสั่งซื้อ</button>'
+    +'<div style="height:8px"></div>';
 }
 
-document.getElementById('goBtn').addEventListener('click', ()=>runAnalysis(document.getElementById('tickerInput').value));
-document.getElementById('tickerInput').addEventListener('keydown', e=>{ if(e.key==='Enter') runAnalysis(e.target.value); });
-document.getElementById('gearBtn').addEventListener('click', ()=>{
-  document.getElementById('settingsPanel').classList.toggle('open');
-});
-document.getElementById('apiKeyInput').addEventListener('change', e=>{
-  localStorage.setItem(APIKEY_KEY, e.target.value.trim());
-});
+function doCheckout(){
+  Q('checkoutOv').classList.add('on');
+}
+function closeCheckout(){
+  Q('checkoutOv').classList.remove('on');
+  cart = {};
+  refreshAll();
+  switchScreen('home');
+}
 
-const savedKey = localStorage.getItem(APIKEY_KEY);
-if(savedKey) document.getElementById('apiKeyInput').value = savedKey;
-else document.getElementById('settingsPanel').classList.add('open');
-renderTfButtons();
-renderRecents();
-
+/* ================= Init ================= */
+renderCatGrid();
+renderBestSellers();
+updateCartBadges();
 </script>
-
 </body>
 </html>
